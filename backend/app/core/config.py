@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
     DOMAIN: str = "localhost"
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
+    ALGORITHM: str = "HS256"
 
     @computed_field  # type: ignore[misc]
     @property

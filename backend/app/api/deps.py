@@ -7,7 +7,6 @@ from jose import JWTError, jwt
 from pydantic import ValidationError
 from sqlmodel import Session
 
-from app.core import security
 from app.core.config import settings
 from app.core.db import engine
 from app.models import TokenPayload, User
@@ -29,7 +28,7 @@ TokenDep = Annotated[str, Depends(reusable_oauth2)]
 def get_current_user(session: SessionDep, token: TokenDep) -> User:
     try:
         payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
         )
         token_data = TokenPayload(**payload)
     except (JWTError, ValidationError):
