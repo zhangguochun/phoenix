@@ -104,14 +104,16 @@ def generate_password_reset_token(email: str) -> str:
     encoded_jwt = jwt.encode(
         {"exp": exp, "nbf": now, "sub": email},
         settings.SECRET_KEY,
-        algorithm="HS256",
+        algorithm=settings.ALGORITHM,
     )
     return encoded_jwt
 
 
 def verify_password_reset_token(token: str) -> str | None:
     try:
-        decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        decoded_token = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
         return str(decoded_token["sub"])
     except InvalidTokenError:
         return None
