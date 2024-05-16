@@ -2,6 +2,7 @@ import {
   Container,
   Flex,
   Heading,
+  Link,
   Skeleton,
   Table,
   TableContainer,
@@ -16,47 +17,45 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { Suspense } from "react"
 import { ErrorBoundary } from "react-error-boundary"
-import { ItemsService } from "../../client"
+import { StoresService } from "../../client"
 import ActionsMenu from "../../components/Common/ActionsMenu"
 import Navbar from "../../components/Common/Navbar"
+import useAuth from "../../hooks/useAuth"
 
-export const Route = createFileRoute("/_layout/items")({
-  component: Items,
+export const Route = createFileRoute("/_layout/stores")({
+  component: Stores,
 })
 
-function ItemsTableBody() {
-  const { data: items } = useSuspenseQuery({
-    queryKey: ["items"],
-    queryFn: () => ItemsService.readItems({}),
+function StoreTableBody() {
+  const { data: stores } = useSuspenseQuery({
+    queryKey: ["stores"],
+    queryFn: () => StoresService.readStores({}), 
   })
+
+  const { isAdmin } = useAuth()
 
   return (
     <Tbody>
-      {items.data.map((item) => (
-        <Tr key={item.id}>
-          <Td>{item.id}</Td>
-          <Td>{item.title}</Td>
-          <Td color={!item.description ? "ui.dim" : "inherit"}>
-            {item.description || "N/A"}
-          </Td>
+      {stores.data.map((store) => ( // Update warehouse variable name
+        <Tr key={store.id}>
+          <Td>{store.title} {isAdmin ? <ActionsMenu type={"Store"} value={store} />: null} </Td> 
           <Td>
-            <ActionsMenu type={"Item"} value={item} />
+            <Link href={`/store/${store.id}/inventory`} color='teal.500'>Explore Inventory</Link>
           </Td>
         </Tr>
       ))}
     </Tbody>
   )
 }
-function ItemsTable() {
+
+function StoresTable() {
   return (
     <TableContainer>
       <Table size={{ base: "sm", md: "md" }}>
         <Thead>
           <Tr>
-            <Th>ID</Th>
-            <Th>Title</Th>
-            <Th>Description</Th>
-            <Th>Actions</Th>
+            <Th>Name</Th> 
+            <Th>Action</Th>
           </Tr>
         </Thead>
         <ErrorBoundary
@@ -71,9 +70,9 @@ function ItemsTable() {
           <Suspense
             fallback={
               <Tbody>
-                {new Array(5).fill(null).map((_, index) => (
+                {new Array(2).fill(null).map((_, index) => (
                   <Tr key={index}>
-                    {new Array(4).fill(null).map((_, index) => (
+                    {new Array(7).fill(null).map((_, index) => (
                       <Td key={index}>
                         <Flex>
                           <Skeleton height="20px" width="20px" />
@@ -85,7 +84,7 @@ function ItemsTable() {
               </Tbody>
             }
           >
-            <ItemsTableBody />
+            <StoreTableBody />
           </Suspense>
         </ErrorBoundary>
       </Table>
@@ -93,15 +92,15 @@ function ItemsTable() {
   )
 }
 
-function Items() {
+function Stores() { // Update function name to Store
   return (
     <Container maxW="full">
       <Heading size="lg" textAlign={{ base: "center", md: "left" }} pt={12}>
-        Items Management
+        Store Management
       </Heading>
+      <Navbar type={"Stores"} />
 
-      <Navbar type={"Item"} />
-      <ItemsTable />
+      <StoresTable />
     </Container>
   )
 }

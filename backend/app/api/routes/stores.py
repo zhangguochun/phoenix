@@ -51,7 +51,7 @@ def read_inventory(session: SessionDep, current_user: CurrentUser, id: int) -> A
         session.query(StoreInventory.item_id,
             StoreInventory.store_id,
             StoreInventory.stock_unit, Item.title, Item.description, Item.revenue,Item.cost,
-            Item.owner_id,            
+            Item.owner_id,
             StoreInventory.item_id
         )
         .join(Item,StoreInventory.item_id == Item.id)
@@ -68,7 +68,7 @@ def read_inventory(session: SessionDep, current_user: CurrentUser, id: int) -> A
             revenue=item_tuple[5],
             cost=item_tuple[6],
             units=item_tuple[2],
-            owner_id=current_user.id
+            owner_id=item_tuple[7]
         )
         store_with_inventory_objects.append(item_public)
 
@@ -77,6 +77,8 @@ def read_inventory(session: SessionDep, current_user: CurrentUser, id: int) -> A
     if not store_with_inventory:
         raise HTTPException(status_code=404, detail="Store not found")
 
+    if not current_user.is_superuser and (store_with_inventory.owner_id != current_user.id):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
 
     return StoreInventoriesPublic(data=store_with_inventory_objects, count=0)
 
